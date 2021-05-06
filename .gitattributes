@@ -1,0 +1,8 @@
+.gitattributes	export-ignore
+.gitignore	export-ignore
+README.md	eol=crlf
+VERSION	export-ignore
+*.bat	eol=crlf
+*.txt	eol=crlf
+CHANGELOG	eol=crlf
+LICENSE	eol=crlf
