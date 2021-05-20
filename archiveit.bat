@@ -74,16 +74,16 @@
     )
 )
 
+@shift
+@goto paramparse
+
+:postparamparse
+
 @if not defined archive_dir (
     @>&2 echo ARCHIVEIT: ERROR: archive directory is not specified.
     @>&2 call:Help
     exit /b 9
 )
-
-@shift
-@goto paramparse
-    
-:postparamparse
 
 @if not exist "%archive_dir%\%target_filename%.7z" goto continue_already_existed
 @if defined overwrite goto continue_already_existed
