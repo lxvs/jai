@@ -1,8 +1,6 @@
-@REM v0.0.1
-@REM 2021-05-04
-@REM https://lxvs.net/jai
-
 @setlocal
+@set "rev=0.0.2"
+@set "lastupdt=2021-05-20"
 
 @if /i "%~1" == "/?" goto help
 @if /i "%~1" == "/7z" if exist "%PATH_TO_7Z%" (
@@ -112,16 +110,22 @@
 @exit /b
 
 :HELP
-@echo Usage:
-@echo     %~nx0 ^<target^> ^<archive-directory^> [/?] [/o] [/7z] [^<7z options^> ...]
 @echo;
-@echo     Switches:
+@echo     Just Archive It v%rev%
+@echo     https://lxvs.net/jai
+@echo     Last Update: %lastupdt%
+@echo;
+@echo USAGE:
+@echo;
+@echo archiveit.bat ^<target^> ^<archive-directory^> [/?] [/o] [/7z] [^<7z options^> ...]
+@echo;
+@echo Switches:
 @echo(        /?  show help
 @echo         /o  overwrite the archive with the same name, without prompts.
 @echo             By default, it will prompt user whether to overwrite or not.
 @echo         /7z Show 7z's help
 @echo;
-@echo     7Z options:
+@echo 7Z options:
 @echo         -mx[N] : set compression level: -mx1 ^(fastest^) ... -mx9 ^(ultra^)
 @echo         -p{Password} : set Password
 @echo         -sdel : delete files after compression
