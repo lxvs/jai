@@ -74,7 +74,7 @@
         @pause
         exit /b 3
     )
-    @reg add "HKEY_CLASSES_ROOT\Directory\shell\jai_%%i\command" /ve /d "\"%jai_bat%\" \"%%1\" \"!item_%%i_destination!\" !item_%%i_options!" /f
+    @reg add "HKEY_CLASSES_ROOT\Directory\shell\jai_%%i\command" /ve /d "\"%jai_bat%\" noterm \"%%1\" \"!item_%%i_destination!\" !item_%%i_options!" /f
 )
 
 @echo Complete.
