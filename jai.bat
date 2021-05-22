@@ -2,9 +2,16 @@
 @set "rev=0.1.0"
 @set "lastupdt=2021-05-22"
 
+@echo;
+@echo     Just Archive It v%rev%
+@echo     https://github.com/lxvs/jai
+@echo     Last Update: %lastupdt%
+@echo;
+
 @if /i "%~1" == "/?" goto help
 @if /i "%~1" == "noterm" (
     @set "pause=@pause"
+    @title Just Archive It v%rev%
     @shift
 ) else @set "pause="
 
@@ -12,9 +19,9 @@
 
 @if not exist "%PATH_TO_7Z%" (
     @>&2 (
-        echo ARCHIVEIT: ERROR: Couldn't find valid 7z executable.
-        echo            Current defined PATH_TO_7Z: %PATH_TO_7Z%
-        echo            Please fix or define the Environment Variable [PATH_TO_7Z]
+        echo JAI: ERROR: Couldn't find valid 7z executable.
+        echo      Current defined PATH_TO_7Z: %PATH_TO_7Z%
+        echo      Please fix or define the Environment Variable [PATH_TO_7Z]
     )
     %pause%
     exit /b 3
@@ -32,14 +39,14 @@
 @shift
 
 @if "%target%" == "" (
-    @>&2 echo ARCHIVEIT: ERROR: no target provided.
+    @>&2 echo JAI: ERROR: no target provided.
     @>&2 call:HELP
     %pause%
     exit /b 1
 )
 
 @if not exist "%target%" (
-    @>&2 echo ARCHIVEIT: ERROR: the target provided is invalid.
+    @>&2 echo JAI: ERROR: the target provided is invalid.
     @>&2 call:HELP
     %pause%
     exit /b 2
@@ -71,7 +78,7 @@
         %pause%
         @exit /b
     ) else (
-        @>&2 echo ARCHIVEIT: ERROR: invalid switch: %param%.
+        @>&2 echo JAI: ERROR: invalid switch: %param%.
         %pause%
         exit /b 4
     )
@@ -81,7 +88,7 @@
         @set "archive_dir=%param%"
         @popd
     ) || (
-        @>&2 echo ARCHIVEIT: ERROR: %param% does not exist or is not a directory.
+        @>&2 echo JAI: ERROR: %param% does not exist or is not a directory.
         %pause%
         exit /b 5
     )
@@ -93,7 +100,7 @@
 :postparamparse
 
 @if not defined archive_dir (
-    @>&2 echo ARCHIVEIT: ERROR: archive directory is not specified.
+    @>&2 echo JAI: ERROR: archive directory is not specified.
     @>&2 call:Help
     %pause%
     exit /b 9
@@ -102,7 +109,7 @@
 @if not exist "%archive_dir%\%target_filename%.7z" goto continue_already_existed
 @if defined overwrite goto continue_already_existed
 @set ow_confirm=
-@set /p "ow_confirm=ARCHIVEIT: %archive_dir%\%target_filename%.7z has alredy existed. Enter Y to overwrite it:"
+@set /p "ow_confirm=JAI: %archive_dir%\%target_filename%.7z has alredy existed. Enter Y to overwrite it:"
 @if /i "%ow_confirm%" == "y" (
     del /f "%archive_dir%\%target_filename%.7z" || (
         %pause%
@@ -110,7 +117,7 @@
     )
     goto continue_already_existed
 ) else (
-    @>&2 echo ARCHIVEIT: ABORT: user canceled.
+    @>&2 echo JAI: ABORT: user canceled.
     %pause%
     exit /b 7
 )
@@ -124,7 +131,7 @@
 )
 
 @if not exist "%archive_dir%\%target_filename%.7z" (
-    @>&2 echo ARCHIVEIT: Warning: %archive_dir%\%target_filename%.7z still not exist!
+    @>&2 echo JAI: Warning: %archive_dir%\%target_filename%.7z still not exist!
     %pause%
     exit /b 8
 )
@@ -132,14 +139,9 @@
 @exit /b
 
 :HELP
-@echo;
-@echo     Just Archive It v%rev%
-@echo     https://lxvs.net/jai
-@echo     Last Update: %lastupdt%
-@echo;
 @echo USAGE:
 @echo;
-@echo archiveit.bat ^<target^> ^<archive-directory^> [/?] [/o] [/7z] [^<7z options^> ...]
+@echo jai.bat ^<target^> ^<archive-directory^> [/?] [/o] [/7z] [^<7z options^> ...]
 @echo;
 @echo         ^<target^>                The directory to be archived
 @echo         ^<archive-directory^>     Where archives go.
