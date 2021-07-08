@@ -30,7 +30,7 @@ set "jai_bat=%target_dir%\jai.bat"
 set x64suffix=
 if /i "%~1" == "x64" set "x64suffix= (x64)"
 set "RegPath=HKCU\SOFTWARE\Classes\Directory\shell"
-set "rev=0.2.0"
+set "rev=0.3.0"
 set "lastupdt=2021-07-08"
 set "website=https://lxvs.net/jai"
 
@@ -95,6 +95,7 @@ echo @echo;
 echo;
 echo pushd %%~dp0
 echo;
+echo if "%%~1" == "" goto help
 echo if /i "%%~1" == "/?" goto help
 echo if /i "%%~1" == "noterm" ^(
 echo     set "pause=pause"
@@ -113,13 +114,6 @@ echo set "target_filename=%%~nx1"
 echo set "target_dir=%%~dp1"
 echo if "%%target_dir:~-1%%" == "\" set "target_dir=%%target_dir:~0,-1%%"
 echo shift
-echo;
-echo if "%%target%%" == "" ^(
-echo     ^>^&2 echo JAI: ERROR: no target provided.
-echo     ^>^&2 call:HELP
-echo     %%pause%%
-echo     exit /b 1
-echo ^)
 echo;
 echo if not exist "%%target%%" ^(
 echo     ^>^&2 echo JAI: ERROR: the target provided is invalid.
@@ -243,14 +237,22 @@ endlocal
 
 copy /y "%TEMP%\jai.bat" "%target_dir%\jai.bat" 1>nul
 del /f "%TEMP%\jai.bat" 1>nul
+copy /y "License.txt" "%target_dir%\License.txt" 1>nul
 if defined x64suffix (set "x64infix=x64\") else set "x64infix="
 copy /y "%x64infix%7za.exe" "%target_dir%\7za.exe" 1>nul
 copy /y "%x64infix%7za.dll" "%target_dir%\7za.dll" 1>nul
+copy /y "License-7z.txt" "%target_dir%\License-7z.txt" 1>nul
 
+reg add "HKCU\SOFTWARE\JAI" /ve /d "Just Archive It v%rev%" /f 1>nul
+reg add "HKCU\SOFTWARE\JAI" /v "Target" /d "%target_dir%" /f 1>nul
+reg add "HKCU\SOFTWARE\JAI" /v "Amount" /d "%item_amount%" /f 1>nul
 for /L %%i in (1,1,%item_amount%) do if defined item_%%i if defined item_%%i_options if defined item_%%i_destination (
-    reg add "%RegPath%\jai_%%i" /ve /d "!item_%%i!" /f 1>nul
-    reg add "%RegPath%\jai_%%i\command" /ve /d "\"%jai_bat%\" noterm \"%%1\" \"!item_%%i_destination!\" !item_%%i_options!" /f 1>nul
+    reg add "%RegPath%\JAI_%%i" /ve /d "!item_%%i!" /f 1>nul
+    reg add "%RegPath%\JAI_%%i\command" /ve /d "\"%jai_bat%\" noterm \"%%1\" \"!item_%%i_destination!\" !item_%%i_options!" /f 1>nul
 )
+
+for /f "skip=2 tokens=1,2*" %%a in ('reg query "HKCU\Environment" /v "Path" 2^>NUL') do if /i "%%~a" == "path" set "UserPath=%%c"
+setx PATH "%target_dir%;%UserPath%" 1>NUL
 
 if %ErrorLevel% == 0 (
     @echo Complete.
