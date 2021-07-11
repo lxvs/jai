@@ -42,20 +42,10 @@ set "website=https://lxvs.net/jai"
 
 pushd %~dp0
 
-if not defined item_amount (
-    >&2 echo ERROR: item_amount is not defined.
-    >&2 echo Open this script in text editor to change variables.
-    popd
-    pause
-    exit /b 1
-)
-if %item_amount% LEQ 0 (
-    >&2 echo ERROR: item_amount must be greater than 0.
-    >&2 echo Open this script in text editor to change variables.
-    popd
-    pause
-    exit /b 2
-)
+call:Assert "defined item_amount" ^
+    "ERROR: Item Amount is not defined." || exit /b 4
+call:Assert "%%item_amount%% GTR 0" ^
+    "ERROR: Item Amount must be greater than 0." || exit /b 5
 
 @echo This script is used to add JAI ^(Just Archive It^) to right-click context
 @echo menus of directories.
@@ -263,3 +253,14 @@ if %ErrorLevel% == 0 (
 popd
 pause
 exit /b
+
+:Assert
+if "%~1" == "" exit /b 1
+if %~1 exit /b 0
+:assert_echo
+if "%~2" NEQ "" >&2 echo %~2
+shift /2
+if "%~2" NEQ "" goto assert_echo
+popd
+pause
+exit /b 1
