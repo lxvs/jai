@@ -2,7 +2,6 @@
 setlocal EnableExtensions EnableDelayedExpansion
 pushd %~dp0
 
-@REM set profile here, omit the .ini suffix.
 set "profile=default"
 
 set x64suffix=
@@ -15,8 +14,13 @@ set "website=https://lxvs.net/jai"
 call:Logo
 call:Assert "exist %profile%.ini" ^
     "ERROR: Couldn't find profile %profile%." || exit /b 2
+if exist "%profile%.custom.ini" (set "custom=1") else set "custom="
 call:ReadConf "%profile%" "config" "Target Directory" "target_dir"
 call:ReadConf "%profile%" "config" "Item Amount" "item_amount"
+if defined custom (
+    call:ReadConf "%profile%" "config" "Target Directory" "target_dir" "custom"
+    call:ReadConf "%profile%" "config" "Item Amount" "item_amount" "custom"
+)
 call:Assert "defined target_dir" ^
     "ERROR: Target Directory is not defined." || exit /b 3
 call:Assert "defined item_amount" ^
@@ -38,6 +42,12 @@ for /L %%i in (1,1,%item_amount%) do (
     call:ReadConf "%profile%" "Item %%i" "Shortcut Key" "item_%%i_sck"
     call:ReadConf "%profile%" "Item %%i" "Options" "item_%%i_opt"
     call:ReadConf "%profile%" "Item %%i" "Destination" "item_%%i_dest"
+    if defined custom (
+        call:ReadConf "%profile%" "Item %%i" "Title" "item_%%i_title" "custom"
+        call:ReadConf "%profile%" "Item %%i" "Shortcut Key" "item_%%i_sck" "custom"
+        call:ReadConf "%profile%" "Item %%i" "Options" "item_%%i_opt" "custom"
+        call:ReadConf "%profile%" "Item %%i" "Destination" "item_%%i_dest" "custom"
+    )
     call:Assert "$$!item_%%i_title!$$ NEQ $$$$" ^
         "ERROR: Title of item %%i is empty." || exit /b 6
     if defined item_%%i_sck (
@@ -47,12 +57,14 @@ for /L %%i in (1,1,%item_amount%) do (
         set "item_%%i=!item_%%i_title!"
         set "item_%%i_disp=!item_%%i_title!"
     )
+)
+
+for /L %%i in (1,1,%item_amount%) do (
     @echo     Item %%i Title:           !item_%%i_disp!
     @echo     Item %%i Options:         !item_%%i_opt!
     @echo     Item %%i Destination:     !item_%%i_dest!
     @echo;
 )
-
 @echo If not, enter N and edit this script with a text editor.
 @echo;
 set /p "confirm=Please confirm your decision (Y/N): "
@@ -265,9 +277,11 @@ setlocal EnableExtensions EnableDelayedExpansion
 set "file=%~1"
 set "section=%~2"
 set "key=%~3"
+set "opt=%~5"
+if /i "%opt%" == "custom" set "file=%file%.custom"
+set "file=%file%.ini"
 if not defined key exit /b 2
 pushd %~dp0
-if /i "%file:~-4%" NEQ ".ini" set "file=%file%.ini"
 if not exist "%file%" exit /b 3
 set activeSection=
 for /f "usebackq delims=" %%a in ("%file%") do (
@@ -278,13 +292,13 @@ for /f "usebackq delims=" %%a in ("%file%") do (
         for /f "tokens=1,2 delims==" %%A in ("!line!") do (
             if /i "!actSection!" == "[%section%]" if /i "!key!" == "%%~A" (
                 endlocal
-                set "%~4=%%~B"
+                call set "%~4=%%~B"
                 exit /b 0
             )
         )
     )
 )
-set "%~4="
+if /i "%opt%" NEQ "custom" set "%~4="
 exit /b 1
 
 :Assert
