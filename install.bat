@@ -1,75 +1,70 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
-@REM ======================================================================
-@REM Customization starts
+pushd %~dp0
 
-set /a "item_amount=4"
+set "profile=default"
 
-set "item_1=Archive It (&A)"
-set "item_1_options=-sse -sdel -stl"
-set "item_1_destination=%USERPROFILE%\Documents"
-
-set "item_2=Archive It Here (&Z)"
-set "item_2_options=-sse -sdel -stl"
-set "item_2_destination=/here"
-
-set "item_3=Archive It Here (duplicate) (&Q)"
-set "item_3_options=-sse -stl"
-set "item_3_destination=/here"
-
-set "item_4=Archive It Encrypted (&X)"
-set "item_4_options=-sse -sdel -stl -pHTTPS://lxvs.net/jai"
-set "item_4_destination=/here"
-
-set "target_dir=%USERPROFILE%\jai"
-
-@REM Customization ends
-@REM =======================================================================
-if "%target_dir:~-1%" == "\" set "target_dir=%target_dir:~0,-1%"
-set "jai_bat=%target_dir%\jai.bat"
 set x64suffix=
 if /i "%~1" == "x64" set "x64suffix= (x64)"
 set "RegPath=HKCU\SOFTWARE\Classes\Directory\shell"
-set "rev=0.3.0"
-set "lastupdt=2021-07-08"
+set "rev=0.4.0"
+set "lastupdt=2021-07-12"
 set "website=https://lxvs.net/jai"
 
-@echo;
-@echo     Just Archive It v%rev%%x64suffix% Installation
-@echo     %website%
-@echo     Last updated: %lastupdt%
-@echo;
-
-pushd %~dp0
-
-if not defined item_amount (
-    >&2 echo ERROR: item_amount is not defined.
-    >&2 echo Open this script in text editor to change variables.
-    popd
-    pause
-    exit /b 1
+call:Logo
+call:Assert "exist %profile%.ini" ^
+    "ERROR: Couldn't find profile %profile%." || exit /b 2
+if exist "%profile%.custom.ini" (set "custom=1") else set "custom="
+call:ReadConf "%profile%" "config" "Target Directory" "target_dir"
+call:ReadConf "%profile%" "config" "Item Amount" "item_amount"
+if defined custom (
+    call:ReadConf "%profile%" "config" "Target Directory" "target_dir" "custom"
+    call:ReadConf "%profile%" "config" "Item Amount" "item_amount" "custom"
 )
-if %item_amount% LEQ 0 (
-    >&2 echo ERROR: item_amount must be greater than 0.
-    >&2 echo Open this script in text editor to change variables.
-    popd
-    pause
-    exit /b 2
-)
+call:Assert "defined target_dir" ^
+    "ERROR: Target Directory is not defined." || exit /b 3
+call:Assert "defined item_amount" ^
+    "ERROR: Item Amount is not defined." || exit /b 4
+call:Assert "%%item_amount%% GTR 0" ^
+    "ERROR: Item Amount must be greater than 0." || exit /b 5
+
+if "%target_dir:~-1%" == "\" set "target_dir=%target_dir:~0,-1%"
+set "jai_bat=%target_dir%\jai.bat"
 
 @echo This script is used to add JAI ^(Just Archive It^) to right-click context
 @echo menus of directories.
 @echo;
-@echo By entering Y, you mean to add such items:
+@echo By entering Y, you mean to add following items:
 @echo;
 
-for /L %%i in (1,1,%item_amount%) do if defined item_%%i if defined item_%%i_options if defined item_%%i_destination (
-    @echo     item %%i:                 !item_%%i!
-    @echo     item %%i options:         !item_%%i_options!
-    @echo     item %%i destination:     !item_%%i_destination!
-    @echo;
+for /L %%i in (1,1,%item_amount%) do (
+    call:ReadConf "%profile%" "Item %%i" "Title" "item_%%i_title"
+    call:ReadConf "%profile%" "Item %%i" "Shortcut Key" "item_%%i_sck"
+    call:ReadConf "%profile%" "Item %%i" "Options" "item_%%i_opt"
+    call:ReadConf "%profile%" "Item %%i" "Destination" "item_%%i_dest"
+    if defined custom (
+        call:ReadConf "%profile%" "Item %%i" "Title" "item_%%i_title" "custom"
+        call:ReadConf "%profile%" "Item %%i" "Shortcut Key" "item_%%i_sck" "custom"
+        call:ReadConf "%profile%" "Item %%i" "Options" "item_%%i_opt" "custom"
+        call:ReadConf "%profile%" "Item %%i" "Destination" "item_%%i_dest" "custom"
+    )
+    call:Assert "$$!item_%%i_title!$$ NEQ $$$$" ^
+        "ERROR: Title of item %%i is empty." || exit /b 6
+    if defined item_%%i_sck (
+        set "item_%%i=!item_%%i_title! (&!item_%%i_sck!)"
+        set "item_%%i_disp=!item_%%i_title! (!item_%%i_sck!)"
+    ) else (
+        set "item_%%i=!item_%%i_title!"
+        set "item_%%i_disp=!item_%%i_title!"
+    )
 )
 
+for /L %%i in (1,1,%item_amount%) do (
+    @echo     Item %%i Title:           !item_%%i_disp!
+    @echo     Item %%i Options:         !item_%%i_opt!
+    @echo     Item %%i Destination:     !item_%%i_dest!
+    @echo;
+)
 @echo If not, enter N and edit this script with a text editor.
 @echo;
 set /p "confirm=Please confirm your decision (Y/N): "
@@ -247,9 +242,9 @@ copy /y "License-7z.txt" "%target_dir%\License-7z.txt" 1>nul
 reg add "HKCU\SOFTWARE\JAI" /ve /d "Just Archive It v%rev%" /f 1>nul
 reg add "HKCU\SOFTWARE\JAI" /v "Target" /d "%target_dir%" /f 1>nul
 reg add "HKCU\SOFTWARE\JAI" /v "Amount" /d "%item_amount%" /f 1>nul
-for /L %%i in (1,1,%item_amount%) do if defined item_%%i if defined item_%%i_options if defined item_%%i_destination (
+for /L %%i in (1,1,%item_amount%) do if defined item_%%i if defined item_%%i_opt if defined item_%%i_dest (
     reg add "%RegPath%\JAI_%%i" /ve /d "!item_%%i!" /f 1>nul
-    reg add "%RegPath%\JAI_%%i\command" /ve /d "\"%jai_bat%\" noterm \"%%1\" \"!item_%%i_destination!\" !item_%%i_options!" /f 1>nul
+    reg add "%RegPath%\JAI_%%i\command" /ve /d "\"%jai_bat%\" noterm \"%%1\" \"!item_%%i_dest!\" !item_%%i_opt!" /f 1>nul
 )
 
 for /f "skip=2 tokens=1,2*" %%a in ('reg query "HKCU\Environment" /v "Path" 2^>NUL') do if /i "%%~a" == "path" set "UserPath=%%c"
@@ -263,3 +258,57 @@ if %ErrorLevel% == 0 (
 popd
 pause
 exit /b
+
+:Logo
+@echo;
+@echo     Just Archive It v%rev%%x64suffix% Installation
+@echo     %website%
+@echo     Last updated: %lastupdt%
+@echo;
+exit /b 0
+
+:ReadConf
+@REM %1: Config file name without .ini
+@REM %2: Section
+@REM %3: Key
+@REM %4: &Value
+@echo off
+setlocal EnableExtensions EnableDelayedExpansion
+set "file=%~1"
+set "section=%~2"
+set "key=%~3"
+set "opt=%~5"
+if /i "%opt%" == "custom" set "file=%file%.custom"
+set "file=%file%.ini"
+if not defined key exit /b 2
+pushd %~dp0
+if not exist "%file%" exit /b 3
+set activeSection=
+for /f "usebackq delims=" %%a in ("%file%") do (
+    set "line=%%~a"
+    if "!line:~0,1!" == "[" (
+        set "actSection=!line!"
+    ) else (
+        for /f "tokens=1,2 delims==" %%A in ("!line!") do (
+            if /i "!actSection!" == "[%section%]" if /i "!key!" == "%%~A" (
+                endlocal
+                call set "%~4=%%~B"
+                exit /b 0
+            )
+        )
+    )
+)
+if /i "%opt%" NEQ "custom" set "%~4="
+exit /b 1
+
+:Assert
+if "%~1" == "" exit /b 1
+set "assertion=%~1"
+if %assertion:$$="% exit /b 0
+:assert_echo
+if "%~2" NEQ "" >&2 echo %~2
+shift /2
+if "%~2" NEQ "" goto assert_echo
+popd
+pause
+exit /b 1
