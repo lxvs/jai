@@ -17,9 +17,9 @@ set "item_3=Archive It Here (duplicate) (&Q)"
 set "item_3_options=-sse -stl"
 set "item_3_destination=/here"
 
-set "item_4=Archive It With a Password (EXAMPLE123) (&X)"
-set "item_4_options=-sse -sdel -stl -pEXAMPLE123"
-set "item_4_destination=%USERPROFILE%\Documents"
+set "item_4=Archive It Encrypted (&X)"
+set "item_4_options=-sse -sdel -stl -pHTTPS://lxvs.net/jai"
+set "item_4_destination=/here"
 
 set "target_dir=%USERPROFILE%\jai"
 
