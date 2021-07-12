@@ -38,6 +38,8 @@ for /L %%i in (1,1,%item_amount%) do (
     call:ReadConf "%profile%" "Item %%i" "Shortcut Key" "item_%%i_sck"
     call:ReadConf "%profile%" "Item %%i" "Options" "item_%%i_opt"
     call:ReadConf "%profile%" "Item %%i" "Destination" "item_%%i_dest"
+    call:Assert "$$!item_%%i_title!$$ NEQ $$$$" ^
+        "ERROR: Title of item %%i is empty." || exit /b 6
     if defined item_%%i_sck (
         set "item_%%i=!item_%%i_title! (&!item_%%i_sck!)"
         set "item_%%i_disp=!item_%%i_title! (!item_%%i_sck!)"
@@ -287,7 +289,8 @@ exit /b 1
 
 :Assert
 if "%~1" == "" exit /b 1
-if %~1 exit /b 0
+set "assertion=%~1"
+if %assertion:$$="% exit /b 0
 :assert_echo
 if "%~2" NEQ "" >&2 echo %~2
 shift /2
