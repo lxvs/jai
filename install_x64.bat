@@ -1,1 +1,1 @@
-@call %~dp0install.bat x64
+@call "%~dp0install.bat" x64
