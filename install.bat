@@ -180,7 +180,7 @@ echo     exit /b 7
 echo ^)
 echo :continue_already_existed
 echo;
-echo if not defined mx for /f "tokens=3 delims= " %%%%a in ^('robocopy "%%~1" "%%TEMP%%" /S /L /BYTES /XJ /NFL /NDL /NJH /R:0 ^^^| find "Bytes"'^) do if %%%%a LEQ 1048576 ^(set "mx=-mx5"^) else set "mx=-mx9"
+echo if not defined mx set "mx=-mx9"
 echo;
 echo 7za.exe a %%args%% %%mx%% "%%archive_dir%%\%%target_filename%%.7z" "%%target%%" ^|^| ^(
 echo     %%pause%%
