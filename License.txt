@@ -3,7 +3,7 @@ Just Archive It
 License for use and distribution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Copyright (C) lxvs.
+Copyright (C) 2021-2022 lxvs.
 
 JAI (Just Archive It) files are under the GNU LGPL license.
 
