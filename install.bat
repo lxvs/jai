@@ -76,8 +76,8 @@ echo setlocal
 echo;
 echo @echo;
 echo @echo     Just Archive It v%rev%
+echo @echo     Date: %lastupdt%
 echo @echo     %website%
-echo @echo     Last Update: %lastupdt%
 echo @echo;
 echo;
 echo pushd %%~dp0
@@ -166,7 +166,7 @@ echo;
 echo if not exist "%%archive_dir%%\%%target_filename%%.7z" goto continue_already_existed
 echo if defined overwrite goto continue_already_existed
 echo set ow_confirm=
-echo set /p "ow_confirm=JAI: %%archive_dir%%\%%target_filename%%.7z has alredy existed. Enter Y to overwrite it:"
+echo set /p "ow_confirm=JAI: %%archive_dir%%\%%target_filename%%.7z has alredy existed. Enter Y to overwrite it: "
 echo if /i "%%ow_confirm%%" == "y" ^(
 echo     del /f "%%archive_dir%%\%%target_filename%%.7z" ^|^| ^(
 echo         %%pause%%
