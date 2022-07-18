@@ -205,6 +205,7 @@ echo exit /b
 endlocal
 
 if defined x64suffix (set "x64infix=x64\") else (set x64infix=)
+set "regPathSoftware=HKCU\Software\lxvs\jai"
 1>nul (
     copy /y "%TEMP%\jai.bat" "%Config_TargetDirectory%\jai.bat"
     del "%TEMP%\jai.bat"
@@ -212,9 +213,9 @@ if defined x64suffix (set "x64infix=x64\") else (set x64infix=)
     copy /y "%x64infix%7za.exe" "%Config_TargetDirectory%\7za.exe"
     copy /y "%x64infix%7za.dll" "%Config_TargetDirectory%\7za.dll"
     copy /y "License-7z.txt" "%Config_TargetDirectory%\License-7z.txt"
-    reg add "HKCU\Software\jai" /v "version" /d "%rev%" /f
-    reg add "HKCU\Software\jai" /v "target" /d "%Config_TargetDirectory%" /f
-    reg add "HKCU\Software\jai" /v "amount" /d "%Config_ItemAmount%" /f
+    reg add "%regPathSoftware%" /v "version" /d "%rev%" /f
+    reg add "%regPathSoftware%" /v "target" /d "%Config_TargetDirectory%" /f
+    reg add "%regPathSoftware%" /v "amount" /d "%Config_ItemAmount%" /f
     for /L %%i in (1,1,%Config_ItemAmount%) do if defined item_%%i if defined Item%%i_Options if defined Item%%i_Destination (
         reg add "%RegPath%\jai_%%i" /ve /d "!item_%%i!" /f
         reg add "%RegPath%\jai_%%i\command" /ve /d "\"%jai_bat%\" noterm \"%%1\" \"!Item%%i_Destination!\" !Item%%i_Options!" /f

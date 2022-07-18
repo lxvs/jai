@@ -7,8 +7,9 @@ set version=
 set target_dir=
 set item_amount=
 set UserPath=
-call:GetReg "HKCU\Software\jai" "version" version
-call:GetReg "HKCU\Software\jai" "target" target_dir
+set "regPathSoftware=HKCU\Software\lxvs\jai"
+call:GetReg "%regPathSoftware%" "version" version
+call:GetReg "%regPathSoftware%" "target" target_dir
 if not defined version if not defined target_dir if not defined silent (
     >&2 echo warning: no installation found
     set silent=1
@@ -40,7 +41,7 @@ if exist "%target_dir%" (
     )
 )
 
-call:GetReg "HKCU\Software\jai" "amount" item_amount
+call:GetReg "%regPathSoftware%" "amount" item_amount
 set /a "item_amount=item_amount"
 set "RegShell=HKCU\Software\Classes\Directory\shell"
 if %item_amount% GTR 0 (
@@ -53,9 +54,9 @@ if %item_amount% GTR 0 (
     )
 )
 if defined silent (
-    reg delete "HKCU\Software\jai" /f 1>nul 2>&1
+    reg delete "%regPathSoftware%" /f 1>nul 2>&1
 ) else (
-    reg delete "HKCU\Software\jai" /f 1>nul
+    reg delete "%regPathSoftware%" /f 1>nul
     @echo Complete.
     pause
 )
