@@ -56,6 +56,8 @@ if /i not "%confirm%" == "Y" (
     exit /b
 )
 
+call uninstall.bat --silent
+
 if not exist "%Config_TargetDirectory%" md "%Config_TargetDirectory%"
 
 setlocal DisableDelayedExpansion

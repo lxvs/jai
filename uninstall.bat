@@ -1,41 +1,64 @@
 @echo off
 setlocal
+set silent=
+if "%~1" == "--silent" (set silent=1)
 title Just Archive It Uninstallation
 set version=
 set target_dir=
 set item_amount=
 set UserPath=
 call:GetReg "HKCU\Software\jai" "version" version
-@echo;
-@echo     Uninstalling JAI %version%
-@echo;
 call:GetReg "HKCU\Software\jai" "target" target_dir
+if not defined version if not defined target_dir if not defined silent (
+    >&2 echo warning: no installation found
+    set silent=1
+)
+if not defined silent (
+    @echo Uninstalling JAI %version% installed at `%target_dir%'
+)
+
+:start
 call:GetReg "HKCU\Environment" "Path" UserPath
 setlocal EnableDelayedExpansion
-if defined UserPath setx PATH "!UserPath:%target_dir%;=!" 1>nul
+if defined UserPath (
+    if defined silent (
+        setx PATH "!UserPath:%target_dir%;=!" 1>nul 2>&1
+    ) else (
+        setx PATH "!UserPath:%target_dir%;=!" 1>nul
+    )
+)
 endlocal
 
 if exist "%target_dir%" (
-    1>nul (
+    1>nul 2>&1 (
         del "%target_dir%\jai.bat"
         del "%target_dir%\7za.exe"
         del "%target_dir%\7za.dll"
         del "%target_dir%\License.txt"
         del "%target_dir%\License-7z.txt"
-        rmdir "%target_dir%" 2>&1
-        reg delete "HKCU\Software\jai" /f
+        rmdir "%target_dir%"
     )
 )
-
 
 call:GetReg "HKCU\Software\jai" "amount" item_amount
 set /a "item_amount=item_amount"
 set "RegShell=HKCU\Software\Classes\Directory\shell"
 if %item_amount% GTR 0 (
-    for /L %%i in (1,1,%item_amount%) do 1>nul reg delete "%RegShell%\jai_%%i" /f
+    for /L %%i in (1,1,%item_amount%) do (
+        if defined silent (
+            reg delete "%RegShell%\jai_%%i" /f 1>nul 2>&1
+        ) else (
+            reg delete "%RegShell%\jai_%%i" /f 1>nul
+        )
+    )
 )
-@echo Complete.
-pause
+if defined silent (
+    reg delete "HKCU\Software\jai" /f 1>nul 2>&1
+) else (
+    reg delete "HKCU\Software\jai" /f 1>nul
+    @echo Complete.
+    pause
+)
 exit /b
 
 :GetReg
