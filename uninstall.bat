@@ -1,13 +1,13 @@
 @echo off
 setlocal
 title Just Archive It Uninstallation
-set "product="
+set version=
 set target_dir=
 set item_amount=
 set UserPath=
-call:GetReg "HKCU\Software\jai" /ve product
+call:GetReg "HKCU\Software\jai" "version" version
 @echo;
-@echo     %product% Uninstallation
+@echo     Uninstalling JAI %version%
 @echo;
 call:GetReg "HKCU\Software\jai" "target" target_dir
 call:GetReg "HKCU\Environment" "Path" UserPath

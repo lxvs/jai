@@ -211,7 +211,7 @@ if defined x64suffix (set "x64infix=x64\") else (set x64infix=)
     copy /y "%x64infix%7za.exe" "%Config_TargetDirectory%\7za.exe"
     copy /y "%x64infix%7za.dll" "%Config_TargetDirectory%\7za.dll"
     copy /y "License-7z.txt" "%Config_TargetDirectory%\License-7z.txt"
-    reg add "HKCU\Software\jai" /ve /d "Just Archive It v%rev%" /f
+    reg add "HKCU\Software\jai" /v "version" /d "%rev%" /f
     reg add "HKCU\Software\jai" /v "target" /d "%Config_TargetDirectory%" /f
     reg add "HKCU\Software\jai" /v "amount" /d "%Config_ItemAmount%" /f
     for /L %%i in (1,1,%Config_ItemAmount%) do if defined item_%%i if defined Item%%i_Options if defined Item%%i_Destination (
