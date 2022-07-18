@@ -1,44 +1,36 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
-pushd %~dp0
+pushd "%~dp0"
 
 set "profile=default"
 
 set x64suffix=
 if /i "%~1" == "x64" set "x64suffix= (x64)"
-set "RegPath=HKCU\SOFTWARE\Classes\Directory\shell"
+set "RegPath=HKCU\Software\Classes\Directory\shell"
 set "rev=0.6.1"
 set "lastupdt=2022-07-18"
 set "website=https://lxvs.net/jai"
 
 call:Logo
-call:Assert "exist %profile%.ini" ^
-    "ERROR: Couldn't find profile %profile%." || exit /b 2
+call:Assert "exist %profile%.ini" "error: couldn't find profile `%profile%'" || exit /b
 call:ReadConf "%profile%" || (
-    >&2 echo ERROR: Failed to read configurations.
-    popd
-    pause
-    exit /b
+    >&2 echo error: error reading configurations
+    goto errexit
 )
-call:Assert "defined Config_TargetDirectory" ^
-    "ERROR: Target Directory is not defined." || exit /b 3
-call:Assert "defined Config_ItemAmount" ^
-    "ERROR: Item Amount is not defined." || exit /b 4
-call:Assert "%%Config_ItemAmount%% GTR 0" ^
-    "ERROR: Item Amount must be greater than 0." || exit /b 5
+call:Assert "defined Config_TargetDirectory" "error: `target directory' not defined" || exit /b
+call:Assert "defined Config_ItemAmount" "error: `item amount' not defined" || exit /b
+call:Assert "%%Config_ItemAmount%% GTR 0" "error: `item amount' must be greater than 0" || exit /b
 
-if "%Config_TargetDirectory:~-1%" == "\" set "Config_TargetDirectory=%Config_TargetDirectory:~0,-1%"
+if "%Config_TargetDirectory:~-1%" == "\" (set "Config_TargetDirectory=%Config_TargetDirectory:~0,-1%")
 set "jai_bat=%Config_TargetDirectory%\jai.bat"
 
-@echo This script is used to add JAI ^(Just Archive It^) to right-click context
-@echo menus of directories.
+@echo This script is used to add JAI ^(Just Archive It^) to right-click context menus of directories.
 @echo;
 @echo By entering Y, you mean to add following items:
 @echo;
 
 for /L %%i in (1,1,%Config_ItemAmount%) do (
-    call:Assert "$$!Item%%i_Title!$$ NEQ $$$$" ^
-        "ERROR: Title of item %%i is empty." || exit /b 6
+    call:Assert "$$!Item%%i_Title!$$ NEQ $$$$" "error: title of item %%i is empty." || exit /b
     if defined Item%%i_ShortcutKey (
         set "item_%%i=!Item%%i_Title! (&!Item%%i_ShortcutKey!)"
         set "item_%%i_disp=!Item%%i_Title! (!Item%%i_ShortcutKey!)"
@@ -54,12 +46,10 @@ for /L %%i in (1,1,%Config_ItemAmount%) do (
     @echo     Item %%i Destination:     !Item%%i_Destination!
     @echo;
 )
-@echo If not, enter N and write modifications in '%profile%.custom.ini'.
-@echo Hint: Items defined in '%profile%.custom.ini' will overwrite ones
-@echo       of the same name in '%profile%.ini'.
+@echo If not, enter N and write modifications in `%profile%.custom.ini'.
+@echo Items defined in `%profile%.custom.ini' will overwrite ones of the same name in `%profile%.ini'.
 @echo;
 set /p "confirm=Please confirm your decision (Y/N): "
-@echo;
 
 if /i not "%confirm%" == "Y" (
     popd
@@ -103,7 +93,7 @@ echo if "%%target_dir:~-1%%" == "\" set "target_dir=%%target_dir:~0,-1%%"
 echo shift
 echo;
 echo if not exist "%%target%%" ^(
-echo     ^>^&2 echo JAI: ERROR: the target provided is invalid.
+echo     ^>^&2 echo error: the target provided is invalid.
 echo     ^>^&2 call:HELP
 echo     %%pause%%
 echo     exit /b 2
@@ -135,7 +125,7 @@ echo         7za.exe
 echo         %%pause%%
 echo         exit /b
 echo     ^) else ^(
-echo         ^>^&2 echo JAI: ERROR: invalid switch: %%param%%.
+echo         ^>^&2 echo error: invalid switch: `%%param%%'
 echo         %%pause%%
 echo         exit /b 4
 echo     ^)
@@ -145,7 +135,7 @@ echo     pushd "%%param%%" 1^>nul 2^>^&1 ^&^& ^(
 echo         set "archive_dir=%%param%%"
 echo         popd
 echo     ^) ^|^| ^(
-echo         ^>^&2 echo JAI: ERROR: %%param%% does not exist or is not a directory.
+echo         ^>^&2 echo error: `%%param%%' does not exist or is not a directory.
 echo         %%pause%%
 echo         exit /b 5
 echo     ^)
@@ -157,7 +147,7 @@ echo;
 echo :postparamparse
 echo;
 echo if not defined archive_dir ^(
-echo     ^>^&2 echo JAI: ERROR: archive directory is not specified.
+echo     ^>^&2 echo error: archive directory not specified
 echo     ^>^&2 call:Help
 echo     %%pause%%
 echo     exit /b 9
@@ -166,7 +156,7 @@ echo;
 echo if not exist "%%archive_dir%%\%%target_filename%%.7z" goto continue_already_existed
 echo if defined overwrite goto continue_already_existed
 echo set ow_confirm=
-echo set /p "ow_confirm=JAI: %%archive_dir%%\%%target_filename%%.7z has alredy existed. Enter Y to overwrite it: "
+echo set /p "ow_confirm=%%archive_dir%%\%%target_filename%%.7z has alredy existed. Enter Y to overwrite it: "
 echo if /i "%%ow_confirm%%" == "y" ^(
 echo     del /f "%%archive_dir%%\%%target_filename%%.7z" ^|^| ^(
 echo         %%pause%%
@@ -174,7 +164,7 @@ echo         exit /b 6
 echo     ^)
 echo     goto continue_already_existed
 echo ^) else ^(
-echo     ^>^&2 echo JAI: ABORT: user canceled.
+echo     ^>^&2 echo operation canceled.
 echo     %%pause%%
 echo     exit /b 7
 echo ^)
@@ -187,24 +177,15 @@ echo     %%pause%%
 echo     exit /b
 echo ^)
 echo;
-echo if not exist "%%archive_dir%%\%%target_filename%%.7z" ^(
-echo     ^>^&2 echo JAI: Warning: %%archive_dir%%\%%target_filename%%.7z still not exist!
-echo     %%pause%%
-echo     exit /b 8
-echo ^)
-echo;
 echo exit /b
 echo;
 echo :HELP
-echo @echo USAGE:
-echo @echo;
-echo @echo jai.bat ^^^<target^^^> ^^^<archive-directory^^^> [/?] [/o] [/7z] [^^^<7z options^^^> ...]
+echo @echo usage: jai.bat ^^^<target^^^> ^^^<archive-directory^^^> [/?] [/o] [/7z] [^^^<7z options^^^> ...]
 echo @echo;
 echo @echo         ^^^<target^^^>                The directory to be archived
 echo @echo         ^^^<archive-directory^^^>     Where archives go.
 echo @echo                                 /here means the same location as ^^^<target^^^>.
 echo @echo;
-echo @echo Switches:
 echo @echo^(        /?  show help
 echo @echo         /o  overwrite the archive with the same name, without prompts.
 echo @echo             By default, it will prompt user whether to overwrite or not.
@@ -217,35 +198,32 @@ echo @echo         -sdel : delete files after compression
 echo @echo         -sse : stop archive creating, if it can't open some input file
 echo @echo         -stl : set archive timestamp from the most recently modified file
 echo @echo;
-echo @echo         Use '%%~nx0 /7z' for complete 7z option list.
+echo @echo         Use `%%~nx0 /7z' for complete 7z option list.
 echo exit /b
 )
 endlocal
 
-copy /y "%TEMP%\jai.bat" "%Config_TargetDirectory%\jai.bat" 1>nul
-del /f "%TEMP%\jai.bat" 1>nul
-copy /y "License.txt" "%Config_TargetDirectory%\License.txt" 1>nul
-if defined x64suffix (set "x64infix=x64\") else set "x64infix="
-copy /y "%x64infix%7za.exe" "%Config_TargetDirectory%\7za.exe" 1>nul
-copy /y "%x64infix%7za.dll" "%Config_TargetDirectory%\7za.dll" 1>nul
-copy /y "License-7z.txt" "%Config_TargetDirectory%\License-7z.txt" 1>nul
-
-reg add "HKCU\SOFTWARE\JAI" /ve /d "Just Archive It v%rev%" /f 1>nul
-reg add "HKCU\SOFTWARE\JAI" /v "Target" /d "%Config_TargetDirectory%" /f 1>nul
-reg add "HKCU\SOFTWARE\JAI" /v "Amount" /d "%Config_ItemAmount%" /f 1>nul
-for /L %%i in (1,1,%Config_ItemAmount%) do if defined item_%%i if defined Item%%i_Options if defined Item%%i_Destination (
-    reg add "%RegPath%\JAI_%%i" /ve /d "!item_%%i!" /f 1>nul
-    reg add "%RegPath%\JAI_%%i\command" /ve /d "\"%jai_bat%\" noterm \"%%1\" \"!Item%%i_Destination!\" !Item%%i_Options!" /f 1>nul
+if defined x64suffix (set "x64infix=x64\") else (set x64infix=)
+1>nul (
+    copy /y "%TEMP%\jai.bat" "%Config_TargetDirectory%\jai.bat"
+    del "%TEMP%\jai.bat"
+    copy /y "License.txt" "%Config_TargetDirectory%\License.txt"
+    copy /y "%x64infix%7za.exe" "%Config_TargetDirectory%\7za.exe"
+    copy /y "%x64infix%7za.dll" "%Config_TargetDirectory%\7za.dll"
+    copy /y "License-7z.txt" "%Config_TargetDirectory%\License-7z.txt"
+    reg add "HKCU\Software\jai" /ve /d "Just Archive It v%rev%" /f
+    reg add "HKCU\Software\jai" /v "target" /d "%Config_TargetDirectory%" /f
+    reg add "HKCU\Software\jai" /v "amount" /d "%Config_ItemAmount%" /f
+    for /L %%i in (1,1,%Config_ItemAmount%) do if defined item_%%i if defined Item%%i_Options if defined Item%%i_Destination (
+        reg add "%RegPath%\jai_%%i" /ve /d "!item_%%i!" /f
+        reg add "%RegPath%\jai_%%i\command" /ve /d "\"%jai_bat%\" noterm \"%%1\" \"!Item%%i_Destination!\" !Item%%i_Options!" /f
+    )
 )
 
-for /f "skip=2 tokens=1,2*" %%a in ('reg query "HKCU\Environment" /v "Path" 2^>NUL') do if /i "%%~a" == "path" set "UserPath=%%c"
-setx PATH "%Config_TargetDirectory%;%UserPath%" 1>NUL
+for /f "skip=2 tokens=1,2*" %%a in ('reg query "HKCU\Environment" /v "Path" 2^>NUL') do if /i "%%~a" == "path" (set "UserPath=%%c")
+setx Path "%Config_TargetDirectory%;%UserPath%" 1>nul
 
-if %ErrorLevel% == 0 (
-    @echo Complete.
-) else (
-    >&2 echo Unspecified error.
-)
+@echo Complete.
 popd
 pause
 exit /b
@@ -291,6 +269,9 @@ if %assertion:$$="% exit /b 0
 if "%~2" NEQ "" >&2 echo %~2
 shift /2
 if "%~2" NEQ "" goto assert_echo
+goto errexit
+
+:errexit
 popd
 pause
 exit /b 1

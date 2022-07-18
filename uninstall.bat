@@ -2,48 +2,38 @@
 setlocal
 title Just Archive It Uninstallation
 set "product="
-set "target_dir="
-set "item_amount="
-set "UserPath="
-call:GetReg "HKCU\SOFTWARE\JAI" /ve product
-if not defined product (
-    >&2 echo Couldn't detect any installed Just Archive It.
-    >&2 echo Re-install it and try again.
-    pause
-    exit /b 1
-)
-title %product% Uninstallation
+set target_dir=
+set item_amount=
+set UserPath=
+call:GetReg "HKCU\Software\jai" /ve product
 @echo;
 @echo     %product% Uninstallation
 @echo;
-call:GetReg "HKCU\SOFTWARE\JAI" "Target" target_dir
-call:GetReg "HKCU\SOFTWARE\JAI" "Amount" item_amount
+call:GetReg "HKCU\Software\jai" "target" target_dir
 call:GetReg "HKCU\Environment" "Path" UserPath
 setlocal EnableDelayedExpansion
 if defined UserPath setx PATH "!UserPath:%target_dir%;=!" 1>nul
 endlocal
 
 if exist "%target_dir%" (
-    1>nul del /f "%target_dir%\jai.bat"
-    1>nul del /f "%target_dir%\7za.exe"
-    1>nul del /f "%target_dir%\7za.dll"
-    1>nul del /f "%target_dir%\License.txt"
-    1>nul del /f "%target_dir%\License-7z.txt"
-    rmdir "%target_dir%" 1>nul 2>&1
-) else (
-    >&2 echo Warning: %target_dir% does not exist!
+    1>nul (
+        del "%target_dir%\jai.bat"
+        del "%target_dir%\7za.exe"
+        del "%target_dir%\7za.dll"
+        del "%target_dir%\License.txt"
+        del "%target_dir%\License-7z.txt"
+        rmdir "%target_dir%" 2>&1
+        reg delete "HKCU\Software\jai" /f
+    )
 )
 
-1>nul reg delete "HKCU\SOFTWARE\JAI" /f
 
+call:GetReg "HKCU\Software\jai" "amount" item_amount
 set /a "item_amount=item_amount"
-if %item_amount% LEQ 0 (
-    >&2 echo Warning: item_amount should greater than 0!
-    goto AmountLeq0
+set "RegShell=HKCU\Software\Classes\Directory\shell"
+if %item_amount% GTR 0 (
+    for /L %%i in (1,1,%item_amount%) do 1>nul reg delete "%RegShell%\jai_%%i" /f
 )
-set "RegShell=HKCU\SOFTWARE\Classes\Directory\shell"
-for /L %%i in (1,1,%item_amount%) do 1>nul reg delete "%RegShell%\JAI_%%i" /f
-:AmountLeq0
 @echo Complete.
 pause
 exit /b
