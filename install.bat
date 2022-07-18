@@ -95,7 +95,7 @@ echo if not exist "%%target%%" ^(
 echo     ^>^&2 echo error: the target provided is invalid.
 echo     ^>^&2 call:HELP
 echo     %%pause%%
-echo     exit /b 2
+echo     exit /b 1
 echo ^)
 echo;
 echo :preparamparse
@@ -126,7 +126,7 @@ echo         exit /b
 echo     ^) else ^(
 echo         ^>^&2 echo error: invalid switch: `%%param%%'
 echo         %%pause%%
-echo         exit /b 4
+echo         exit /b 1
 echo     ^)
 echo;
 echo ^) else ^(
@@ -136,7 +136,7 @@ echo         popd
 echo     ^) ^|^| ^(
 echo         ^>^&2 echo error: `%%param%%' does not exist or is not a directory.
 echo         %%pause%%
-echo         exit /b 5
+echo         exit /b 1
 echo     ^)
 echo ^)
 echo;
@@ -149,7 +149,7 @@ echo if not defined archive_dir ^(
 echo     ^>^&2 echo error: archive directory not specified
 echo     ^>^&2 call:Help
 echo     %%pause%%
-echo     exit /b 9
+echo     exit /b 1
 echo ^)
 echo;
 echo if not exist "%%archive_dir%%\%%target_filename%%.7z" goto continue_already_existed
@@ -159,13 +159,13 @@ echo set /p "ow_confirm=%%archive_dir%%\%%target_filename%%.7z has alredy existe
 echo if /i "%%ow_confirm%%" == "y" ^(
 echo     del /f "%%archive_dir%%\%%target_filename%%.7z" ^|^| ^(
 echo         %%pause%%
-echo         exit /b 6
+echo         exit /b 1
 echo     ^)
 echo     goto continue_already_existed
 echo ^) else ^(
 echo     ^>^&2 echo operation canceled.
 echo     %%pause%%
-echo     exit /b 7
+echo     exit /b 1
 echo ^)
 echo :continue_already_existed
 echo;
