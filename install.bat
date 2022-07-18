@@ -57,7 +57,6 @@ if /i not "%confirm%" == "Y" (
 )
 
 if not exist "%Config_TargetDirectory%" md "%Config_TargetDirectory%"
-attrib +h "%Config_TargetDirectory%"
 
 setlocal DisableDelayedExpansion
 >"%TEMP%\jai.bat" (
