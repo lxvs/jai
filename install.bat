@@ -5,7 +5,7 @@ pushd "%~dp0"
 set "profile=default"
 
 set x64suffix=
-if /i "%~1" == "x64" set "x64suffix= (x64)"
+if /i "%~1" == "x64" (set "x64suffix= (x64)")
 set "RegPath=HKCU\Software\Classes\Directory\shell"
 set "rev=0.6.1"
 set "lastupdt=2022-07-18"
@@ -58,149 +58,179 @@ if /i not "%confirm%" == "Y" (
 
 call uninstall.bat --silent
 
-if not exist "%Config_TargetDirectory%" md "%Config_TargetDirectory%"
+if not exist "%Config_TargetDirectory%" (md "%Config_TargetDirectory%")
 
 setlocal DisableDelayedExpansion
 >"%TEMP%\jai.bat" (
 echo @echo off
 echo setlocal
+echo set p7za="%%~dp07za.exe"
 echo;
 echo @echo;
-echo @echo     Just Archive It v%rev%
+echo @echo     Just Archive It %rev%
 echo @echo     Date: %lastupdt%
 echo @echo     %website%
 echo @echo;
 echo;
-echo pushd %%~dp0
-echo;
-echo if "%%~1" == "" goto help
-echo if /i "%%~1" == "/?" goto help
-echo if /i "%%~1" == "noterm" ^(
+echo if "%%~1" == "" ^(goto help^)
+echo if /i "%%~1" == "/?" ^(goto help^)
+echo set pause=
+echo if /i "%%~1" == "--not-in-term" ^(
 echo     set "pause=pause"
-echo     title Just Archive It v%rev%
-echo     shift
-echo ^) else set "pause="
-echo;
-echo if /i "%%~1" == "/7z" ^(
-echo     7za.exe
-echo     %%pause%%
-echo     exit /b
+echo     title Just Archive It %rev%
+echo     shift /1
 echo ^)
 echo;
-echo set "target=%%~1"
-echo set "target_filename=%%~nx1"
-echo set "target_dir=%%~dp1"
-echo if "%%target_dir:~-1%%" == "\" set "target_dir=%%target_dir:~0,-1%%"
-echo shift
-echo;
-echo if not exist "%%target%%" ^(
-echo     ^>^&2 echo error: the target provided is invalid.
-echo     ^>^&2 call:HELP
+echo if /i "%%~1" == "--7z-help" ^(
+echo     %%p7za%% --help
 echo     %%pause%%
-echo     exit /b 1
+echo     exit /b
 echo ^)
 echo;
 echo :preparamparse
-echo set "mx="
-echo set "args="
-echo set "archive_dir="
-echo set "overwrite="
+echo set mx=
+echo set flags_7z=
+echo set target=
+echo set dest=
+echo set force=
+echo set here=
+echo set args=
 echo;
 echo :paramparse
-echo if "%%~1" == "" goto postparamparse
+echo if "%%~1" == "" ^(goto postparamparse^)
 echo set "param=%%~1"
-echo if "%%param:~0,1%%" == "-" ^(
+echo if "%%param%%" == "/?" ^(
+echo     goto help
+echo ^) else if "%%param:~0,1%%" == "-" ^(
 echo     if /i "%%param:~0,3%%" == "-mx" ^(
 echo         set "mx=%%param%%"
-echo     ^) else set "args=%%args%% %%param%%"
-echo;
-echo ^) else if "%%param:~0,1%%" == "/" ^(
-echo     if /i "%%param%%" == "/o" ^(
-echo         set "overwrite=1"
-echo     ^) else if /i "%%param%%" == "/here" ^(
-echo         set "archive_dir=%%target_dir%%"
-echo     ^) else if /i "%%param%%" == "/?" ^(
-echo         goto HELP
-echo     ^) else if /i "%%param%%" == "/7z" ^(
-echo         7za.exe
+echo     ^) else if /i "%%param%%" == "-f" ^(
+echo         set force=1
+echo     ^) else if /i "%%param%%" == "--force" ^(
+echo         set force=1
+echo     ^) else if /i "%%param%%" == "--here" ^(
+echo         set here=1
+echo     ^) else if /i "%%param%%" == "--in-place" ^(
+echo         set here=1
+echo     ^) else if "%%param%%" == "-?" ^(
+echo         goto help
+echo     ^) else if /i "%%param%%" == "-h" ^(
+echo         goto help
+echo     ^) else if /i "%%param%%" == "--help" ^(
+echo         goto help
+echo     ^) else if /i "%%param%%" == "--7z-help" ^(
+echo         %%p7za%% --help
 echo         %%pause%%
 echo         exit /b
+echo     ^) else if "%%param%%" == "--" ^(
+echo         shift /1
+echo         goto skipswitches
 echo     ^) else ^(
-echo         ^>^&2 echo error: invalid switch: `%%param%%'
-echo         %%pause%%
-echo         exit /b 1
+echo         set "flags_7z=%%flags_7z%% %%param%%"
 echo     ^)
-echo;
 echo ^) else ^(
-echo     pushd "%%param%%" 1^>nul 2^>^&1 ^&^& ^(
-echo         set "archive_dir=%%param%%"
-echo         popd
-echo     ^) ^|^| ^(
-echo         ^>^&2 echo error: `%%param%%' does not exist or is not a directory.
-echo         %%pause%%
-echo         exit /b 1
-echo     ^)
+echo     set "args=%%args%% %%1"
 echo ^)
-echo;
-echo shift
+echo shift /1
 echo goto paramparse
 echo;
+echo :skipswitches
+echo if "%%~1" == "" ^(goto postparamparse^)
+echo set "args=%%args%% %%1"
+echo shift /1
+echo goto skipswitches
+echo;
 echo :postparamparse
-echo;
-echo if not defined archive_dir ^(
-echo     ^>^&2 echo error: archive directory not specified
-echo     ^>^&2 call:Help
-echo     %%pause%%
-echo     exit /b 1
+echo if not defined mx ^(set "mx=-mx9"^)
+echo call:parseargs %%args%% ^|^| goto errexit
+echo if not defined target ^(
+echo     ^>^&2 echo error: TARGET not specified
+echo     ^>^&2 echo Try `jai --help' for more information
+echo     goto errexit
 echo ^)
+echo if not exist "%%target%%" ^(
+echo     ^>^&2 echo error: TARGET `%%target%%' does not exist
+echo     goto errexit
+echo ^)
+echo if "%%target:~-1%%" == "\" ^(set "target=%%target:~0,-1%%"^)
+echo if defined here ^(
+echo     if defined dest ^(
+echo         ^>^&2 echo error: --here/--in-place and DESTINATION are both present
+echo         ^>^&2 echo Try `jai --help' for more information
+echo         goto errexit
+echo     ^)
+echo     set "dest=%%target_dir%%"
+echo ^) else if not defined dest ^(
+echo     ^>^&2 echo error: DESTINATION not specified
+echo     ^>^&2 echo Try `jai --help' for more information
+echo     goto errexit
+echo ^)
+echo if "%%dest:~-1%%" == "\" ^(set "dest=%%dest:~0,-1%%"^)
 echo;
-echo if not exist "%%archive_dir%%\%%target_filename%%.7z" goto continue_already_existed
-echo if defined overwrite goto continue_already_existed
+echo if not exist "%%dest%%\%%target_filename%%.7z" ^(goto continue_already_existed^)
+echo if defined force ^(goto continue_already_existed^)
 echo set ow_confirm=
-echo set /p "ow_confirm=%%archive_dir%%\%%target_filename%%.7z has alredy existed. Enter Y to overwrite it: "
+echo set /p "ow_confirm=%%dest%%\%%target_filename%%.7z has alredy existed. Enter Y to overwrite it: "
 echo if /i "%%ow_confirm%%" == "y" ^(
-echo     del /f "%%archive_dir%%\%%target_filename%%.7z" ^|^| ^(
-echo         %%pause%%
-echo         exit /b 1
+echo     del /f "%%dest%%\%%target_filename%%.7z" ^|^| ^(
+echo         goto errexit
 echo     ^)
 echo     goto continue_already_existed
 echo ^) else ^(
-echo     ^>^&2 echo operation canceled.
-echo     %%pause%%
-echo     exit /b 1
+echo     ^>^&2 echo operation canceled
+echo     goto errexit
 echo ^)
 echo :continue_already_existed
 echo;
-echo if not defined mx set "mx=-mx9"
+echo %%p7za%% a %%flags_7z%% %%mx%% -- "%%dest%%\%%target_filename%%.7z" "%%target%%" ^|^| ^(goto errexit^)
+echo exit /b
 echo;
-echo 7za.exe a %%args%% %%mx%% "%%archive_dir%%\%%target_filename%%.7z" "%%target%%" ^|^| ^(
-echo     %%pause%%
-echo     exit /b
+echo :help
+echo @echo usage: jai.bat [SWITCHES] [--] TARGET DESTINATION
+echo @echo;
+echo @echo Comparess TARGET using 7-Zip and copy/move compressed archive into directory DESTINATION.
+echo @echo;
+echo @echo     -h, --help              show help
+echo @echo     -f, --force             overwrite quietly
+echo @echo     --here, --in-place      compress in place
+echo @echo     --7z-help               show help on 7-Zip
+echo @echo;
+echo @echo 7-Zip switches:
+echo @echo     -mx[N] : set compression level: -mx1 ^^^(fastest^^^) ... -mx9 ^^^(ultra^^^)
+echo @echo     -p{Password} : set Password
+echo @echo     -sdel : delete files after compression
+echo @echo     -sse : stop archive creating, if it can't open some input file
+echo @echo     -stl : set archive timestamp from the most recently modified file
+echo @echo;
+echo @echo     Try `jai --7z-help' for more information.
+echo exit /b
+echo;
+echo :parseargs
+echo if %%1. == . ^(exit /b^)
+echo if not defined target ^(
+echo     set "target=%%~1"
+echo     set "target_filename=%%~nx1"
+echo     set "target_dir=%%~dp1"
+echo     shift /1
+echo     goto parseargs
 echo ^)
+echo if not defined dest ^(
+echo     pushd "%%~1" 1^>nul 2^>^&1 ^&^& ^(
+echo         set "dest=%%~1"
+echo         popd
+echo     ^) ^|^| ^(
+echo         ^>^&2 echo error: `%%~1' does not exist or is not a directory
+echo         exit /b 1
+echo     ^)
+echo     shift /1
+echo     goto parseargs
+echo ^)
+echo ^>^&2 echo error: invalid argument `%%~1'
+echo exit /b 1
 echo;
-echo exit /b
-echo;
-echo :HELP
-echo @echo usage: jai.bat ^^^<target^^^> ^^^<archive-directory^^^> [/?] [/o] [/7z] [^^^<7z options^^^> ...]
-echo @echo;
-echo @echo         ^^^<target^^^>                The directory to be archived
-echo @echo         ^^^<archive-directory^^^>     Where archives go.
-echo @echo                                 /here means the same location as ^^^<target^^^>.
-echo @echo;
-echo @echo^(        /?  show help
-echo @echo         /o  overwrite the archive with the same name, without prompts.
-echo @echo             By default, it will prompt user whether to overwrite or not.
-echo @echo         /7z Show 7z's help
-echo @echo;
-echo @echo 7Z options:
-echo @echo         -mx[N] : set compression level: -mx1 ^^^(fastest^^^) ... -mx9 ^^^(ultra^^^)
-echo @echo         -p{Password} : set Password
-echo @echo         -sdel : delete files after compression
-echo @echo         -sse : stop archive creating, if it can't open some input file
-echo @echo         -stl : set archive timestamp from the most recently modified file
-echo @echo;
-echo @echo         Use `%%~nx0 /7z' for complete 7z option list.
-echo exit /b
+echo :errexit
+echo %%pause%%
+echo exit /b 1
 )
 endlocal
 
@@ -218,14 +248,14 @@ set "regPathSoftware=HKCU\Software\lxvs\jai"
     reg add "%regPathSoftware%" /v "amount" /d "%Config_ItemAmount%" /f
     for /L %%i in (1,1,%Config_ItemAmount%) do if defined item_%%i if defined Item%%i_Options if defined Item%%i_Destination (
         reg add "%RegPath%\jai_%%i" /ve /d "!item_%%i!" /f
-        reg add "%RegPath%\jai_%%i\command" /ve /d "\"%jai_bat%\" noterm \"%%1\" \"!Item%%i_Destination!\" !Item%%i_Options!" /f
+        reg add "%RegPath%\jai_%%i\command" /ve /d "\"%jai_bat%\" --not-in-term \"%%1\" \"!Item%%i_Destination!\" !Item%%i_Options!" /f
     )
 )
 
 for /f "skip=2 tokens=1,2*" %%a in ('reg query "HKCU\Environment" /v "Path" 2^>NUL') do if /i "%%~a" == "path" (set "UserPath=%%c")
 setx Path "%Config_TargetDirectory%;%UserPath%" 1>nul
 
-@echo Complete.
+@echo Complete
 popd
 pause
 exit /b
@@ -241,15 +271,15 @@ exit /b 0
 :ReadConf
 @REM %1: Config file name without .ini
 set "readconf_fn=%~1"
-if "%readconf_fn%" == "" set "readconf_fn=default"
+if "%readconf_fn%" == "" (set "readconf_fn=default")
 call:_ReadConf "%readconf_fn%.ini" || exit /b
 call:_ReadConf "%readconf_fn%.custom.ini" || exit /b 0
 exit /b
 
 :_ReadConf
-pushd %~dp0
+pushd "%~dp0"
 set "_readconf_fn=%~1"
-if not exist "%_readconf_fn%" exit /b 1
+if not exist "%_readconf_fn%" (exit /b 1)
 for /f "usebackq delims=" %%a in ("%_readconf_fn%") do (
     set "line=%%~a"
     if "!line:~0,1!" == "[" (
@@ -264,13 +294,13 @@ popd
 exit /b
 
 :Assert
-if "%~1" == "" exit /b 1
+if "%~1" == "" (exit /b 1)
 set "assertion=%~1"
-if %assertion:$$="% exit /b 0
+if %assertion:$$="% (exit /b 0)
 :assert_echo
-if "%~2" NEQ "" >&2 echo %~2
+if "%~2" NEQ "" (>&2 echo %~2)
 shift /2
-if "%~2" NEQ "" goto assert_echo
+if "%~2" NEQ "" (goto assert_echo)
 goto errexit
 
 :errexit
