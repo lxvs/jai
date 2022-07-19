@@ -209,8 +209,7 @@ echo :parseargs
 echo if %%1. == . ^(exit /b^)
 echo if not defined target ^(
 echo     set "target=%%~1"
-echo     set "target_filename=%%~nx1"
-echo     set "target_dir=%%~dp1"
+echo     call:GetDirAndName "%%~1" target_dir target_filename
 echo     shift /1
 echo     goto parseargs
 echo ^)
@@ -227,6 +226,17 @@ echo     goto parseargs
 echo ^)
 echo ^>^&2 echo error: invalid argument `%%~1'
 echo exit /b 1
+echo;
+echo :GetDirAndName
+echo set "gdan_path=%%~1"
+echo if "%%gdan_path:~-1%%" NEQ "\" ^(
+echo     set "%%2=%%~dp1"
+echo     set "%%3=%%~nx1"
+echo     exit /b
+echo ^)
+echo set "gdan_path=%%gdan_path:~0,-1%%"
+echo call:GetDirAndName "%%gdan_path%%" %%2 %%3
+echo exit /b
 echo;
 echo :errexit
 echo %%pause%%
