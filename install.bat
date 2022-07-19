@@ -69,7 +69,7 @@ echo;
 echo if "%%~1" == "" ^(goto help^)
 echo if /i "%%~1" == "/?" ^(goto help^)
 echo set pause=
-echo if /i "%%~1" == "--not-in-term" ^(
+echo if /i "%%~1" == "--pause-when-error" ^(
 echo     set "pause=pause"
 echo     title Just Archive It %rev%
 echo     shift /1
@@ -192,6 +192,7 @@ echo @echo     --version               show version and exit
 echo @echo     --7z-help               show help of 7-Zip and exit
 echo @echo     -f, --force             overwrite quietly
 echo @echo     --here, --in-place      compress in place
+echo @echo     --pause-when-error      when error occurs, pause before exiting
 echo @echo;
 echo @echo 7-Zip switches:
 echo @echo     -mx[N] : set compression level: -mx1 ^^^(fastest^^^) ... -mx9 ^^^(ultra^^^)
@@ -263,7 +264,7 @@ set "regPathSoftware=HKCU\Software\lxvs\jai"
     reg add "%regPathSoftware%" /v "amount" /d "%Config_ItemAmount%" /f
     for /L %%i in (1,1,%Config_ItemAmount%) do if defined item_%%i if defined Item%%i_Options if defined Item%%i_Destination (
         reg add "%RegPath%\jai_%%i" /ve /d "!item_%%i!" /f
-        reg add "%RegPath%\jai_%%i\command" /ve /d "\"%jai_bat%\" --not-in-term \"%%1\" \"!Item%%i_Destination!\" !Item%%i_Options!" /f
+        reg add "%RegPath%\jai_%%i\command" /ve /d "\"%jai_bat%\" --pause-when-error \"%%1\" \"!Item%%i_Destination!\" !Item%%i_Options!" /f
     )
 )
 
