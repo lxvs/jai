@@ -6,10 +6,12 @@ set "profile=default"
 
 set x64suffix=
 if /i "%~1" == "x64" (set "x64suffix= (x64)")
-set "RegPath=HKCU\Software\Classes\Directory\shell"
 set "rev=0.6.1"
 set "lastupdt=2022-07-18"
 set "website=https://lxvs.net/jai"
+set "regPathDir=HKCU\Software\Classes\Directory\shell"
+set "regPathDirBg=HKCU\Software\Classes\Directory\Background\shell"
+set "regPathFileType=HKCU\Software\Classes\SystemFileAssociations\.$$FileType$$\shell"
 
 call:Logo
 call:Assert "exist %profile%.ini" "error: couldn't find profile `%profile%'" || exit /b
@@ -20,6 +22,18 @@ call:ReadConf "%profile%" || (
 call:Assert "defined Config_TargetDirectory" "error: `target directory' not defined" || exit /b
 call:Assert "defined Config_ItemAmount" "error: `item amount' not defined" || exit /b
 call:Assert "%%Config_ItemAmount%% GTR 0" "error: `item amount' must be greater than 0" || exit /b
+if defined Config_DirMenu (
+    set /a Config_DirMenu=Config_DirMenu
+) else (
+    set Config_DirMenu=1
+)
+if defined Config_DirBackgroundMenu (
+    set /a Config_DirBackgroundMenu=Config_DirBackgroundMenu
+) else (
+    set Config_DirBackgroundMenu=1
+)
+if not defined Config_FileType (set Config_FileType=txt,log)
+set "Config_FileType=%Config_FileType:,= %"
 
 if "%Config_TargetDirectory:~-1%" == "\" (set "Config_TargetDirectory=%Config_TargetDirectory:~0,-1%")
 set "jai_bat=%Config_TargetDirectory%\jai.bat"
@@ -262,9 +276,20 @@ set "regPathSoftware=HKCU\Software\lxvs\jai"
     reg add "%regPathSoftware%" /v "version" /d "%rev%" /f
     reg add "%regPathSoftware%" /v "target" /d "%Config_TargetDirectory%" /f
     reg add "%regPathSoftware%" /v "amount" /d "%Config_ItemAmount%" /f
+    reg add "%regPathSoftware%" /v "filetype" /d "%Config_FileType%" /f
     for /L %%i in (1,1,%Config_ItemAmount%) do if defined item_%%i if defined Item%%i_Options if defined Item%%i_Destination (
-        reg add "%RegPath%\jai_%%i" /ve /d "!item_%%i!" /f
-        reg add "%RegPath%\jai_%%i\command" /ve /d "\"%jai_bat%\" --pause-when-error \"%%1\" \"!Item%%i_Destination!\" !Item%%i_Options!" /f
+        if "%Config_DirMenu%" NEQ "0" (
+            reg add "%regPathDir%\jai_%%i" /ve /d "!item_%%i!" /f
+            reg add "%regPathDir%\jai_%%i\command" /ve /d "\"%jai_bat%\" --pause-when-error \"%%1\" \"!Item%%i_Destination!\" !Item%%i_Options!" /f
+        )
+        if "%Config_DirBackgroundMenu%" NEQ "0" (
+            reg add "%regPathDirBg%\jai_%%i" /ve /d "!item_%%i!" /f
+            reg add "%regPathDirBg%\jai_%%i\command" /ve /d "\"%jai_bat%\" --pause-when-error \"%%1\" \"!Item%%i_Destination!\" !Item%%i_Options!" /f
+        )
+        for %%j in (%Config_FileType%) do (
+            reg add "!regPathFileType:$$FileType$$=%%~j!\jai_%%i" /ve /d "!item_%%i!" /f
+            reg add "!regPathFileType:$$FileType$$=%%~j!\jai_%%i\command" /ve /d "\"%jai_bat%\" --pause-when-error \"%%1\" \"!Item%%i_Destination!\" !Item%%i_Options!" /f
+        )
     )
 )
 

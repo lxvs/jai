@@ -6,6 +6,7 @@ title Just Archive It Uninstallation
 set version=
 set target_dir=
 set item_amount=
+set filetype=
 set UserPath=
 set "regPathSoftware=HKCU\Software\lxvs\jai"
 call:GetReg "%regPathSoftware%" "version" version
@@ -42,17 +43,22 @@ if exist "%target_dir%" (
 )
 
 call:GetReg "%regPathSoftware%" "amount" item_amount
+call:GetReg "%regPathSoftware%" "filetype" filetype
 set /a "item_amount=item_amount"
-set "RegShell=HKCU\Software\Classes\Directory\shell"
+set "regPathDir=HKCU\Software\Classes\Directory\shell"
+set "regPathDirBg=HKCU\Software\Classes\Directory\Background\shell"
+set "regPathFileType=HKCU\Software\Classes\SystemFileAssociations\.$$FileType$$\shell"
+setlocal enableDelayedExpansion
 if %item_amount% GTR 0 (
     for /L %%i in (1,1,%item_amount%) do (
-        if defined silent (
-            reg delete "%RegShell%\jai_%%i" /f 1>nul 2>&1
-        ) else (
-            reg delete "%RegShell%\jai_%%i" /f 1>nul
+        reg delete "%regPathDir%\jai_%%i" /f 1>nul 2>&1
+        reg delete "%regPathDirBg%\jai_%%i" /f 1>nul 2>&1
+        for %%j in (%filetype%) do (
+            reg delete "!regPathFileType:$$FileType$$=%%~j!\jai_%%i" /f 1>nul 2>&1
         )
     )
 )
+endlocal
 if defined silent (
     reg delete "%regPathSoftware%" /f 1>nul 2>&1
 ) else (
