@@ -6,8 +6,8 @@ set "profile=default"
 
 set x64suffix=
 if /i "%~1" == "x64" (set "x64suffix= (x64)")
-set "rev=0.6.1"
-set "lastupdt=2022-07-18"
+set "rev=0.7.0"
+set "lastupdt=2022-07-19"
 set "website=https://lxvs.net/jai"
 set "regPathDir=HKCU\Software\Classes\Directory\shell"
 set "regPathDirBg=HKCU\Software\Classes\Directory\Background\shell"
