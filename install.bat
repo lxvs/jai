@@ -66,12 +66,6 @@ echo @echo off
 echo setlocal
 echo set p7za="%%~dp07za.exe"
 echo;
-echo @echo;
-echo @echo     Just Archive It %rev%
-echo @echo     Date: %lastupdt%
-echo @echo     %website%
-echo @echo;
-echo;
 echo if "%%~1" == "" ^(goto help^)
 echo if /i "%%~1" == "/?" ^(goto help^)
 echo set pause=
@@ -112,6 +106,8 @@ echo     ^) else if /i "%%param%%" == "--here" ^(
 echo         set here=1
 echo     ^) else if /i "%%param%%" == "--in-place" ^(
 echo         set here=1
+echo     ^) else if /i "%%param%%" == "--version" ^(
+echo         goto Logo
 echo     ^) else if "%%param%%" == "-?" ^(
 echo         goto help
 echo     ^) else if /i "%%param%%" == "-h" ^(
@@ -182,6 +178,7 @@ echo     goto errexit
 echo ^)
 echo :continue_already_existed
 echo;
+echo call:Logo
 echo %%p7za%% a %%flags_7z%% %%mx%% -- "%%dest%%\%%target_filename%%.7z" "%%target%%" ^|^| ^(goto errexit^)
 echo exit /b
 echo;
@@ -190,10 +187,11 @@ echo @echo usage: jai.bat [SWITCHES] [--] TARGET DESTINATION
 echo @echo;
 echo @echo Comparess TARGET using 7-Zip and copy/move compressed archive into directory DESTINATION.
 echo @echo;
-echo @echo     -h, --help              show help
+echo @echo     -h, --help              show help and exit
+echo @echo     --version               show version and exit
+echo @echo     --7z-help               show help of 7-Zip and exit
 echo @echo     -f, --force             overwrite quietly
 echo @echo     --here, --in-place      compress in place
-echo @echo     --7z-help               show help on 7-Zip
 echo @echo;
 echo @echo 7-Zip switches:
 echo @echo     -mx[N] : set compression level: -mx1 ^^^(fastest^^^) ... -mx9 ^^^(ultra^^^)
@@ -236,6 +234,13 @@ echo     exit /b
 echo ^)
 echo set "gdan_path=%%gdan_path:~0,-1%%"
 echo call:GetDirAndName "%%gdan_path%%" %%2 %%3
+echo exit /b
+echo;
+echo :Logo
+echo @echo;
+echo @echo     Just Archive It %rev%
+echo @echo     Date: %lastupdt%
+echo @echo     %website%
 echo exit /b
 echo;
 echo :errexit
