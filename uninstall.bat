@@ -23,10 +23,12 @@ if not defined silent (
 call:GetReg "HKCU\Environment" "Path" UserPath
 setlocal EnableDelayedExpansion
 if defined UserPath (
-    if defined silent (
-        setx PATH "!UserPath:%target_dir%;=!" 1>nul 2>&1
-    ) else (
-        setx PATH "!UserPath:%target_dir%;=!" 1>nul
+    if defined target_dir (
+        if defined silent (
+            setx Path "!UserPath:%target_dir%;=!" 1>nul 2>&1
+        ) else (
+            setx Path "!UserPath:%target_dir%;=!" 1>nul
+        )
     )
 )
 endlocal
