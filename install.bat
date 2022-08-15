@@ -1,3 +1,6 @@
+@REM Just Archive It Installation
+@REM https://github.com/lxvs/jai
+
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 pushd "%~dp0"
@@ -6,7 +9,7 @@ set x64suffix=
 if /i "%~1" == "x64" (set "x64suffix= (x64)")
 set "rev=0.7.1"
 set "lastupdt=2022-08-15"
-set "website=https://lxvs.net/jai"
+set "website=https://github.com/lxvs/jai"
 set "regPathDir=HKCU\Software\Classes\Directory\shell"
 set "regPathDirBg=HKCU\Software\Classes\Directory\Background\shell"
 set "regPathFileType=HKCU\Software\Classes\SystemFileAssociations\.$$FileType$$\shell"
@@ -14,7 +17,8 @@ set "regPathFileType=HKCU\Software\Classes\SystemFileAssociations\.$$FileType$$\
 call:Logo
 call:ReadConf || (
     >&2 echo error: error reading file `install.ini'
-    goto errexit
+    set exitcode=1
+    goto end
 )
 call:Assert "defined Config_TargetDirectory" "error: `target directory' not defined" || exit /b
 call:Assert "defined Config_ItemAmount" "error: `item amount' not defined" || exit /b
@@ -326,7 +330,13 @@ for /f "usebackq delims=" %%a in ("%_readconf_fn%") do (
     )
 )
 popd
-exit /b
+exit /b 0
+
+:help
+echo usage: install.bat
+echo    or: install.bat --silent
+echo    or: install.bat --uninstall
+exit /b 0
 
 :Assert
 if "%~1" == "" (exit /b 1)
@@ -336,9 +346,10 @@ if %assertion:$$="% (exit /b 0)
 if "%~2" NEQ "" (>&2 echo %~2)
 shift /2
 if "%~2" NEQ "" (goto assert_echo)
-goto errexit
+set exitcode=1
+goto end
 
-:errexit
+:end
 popd
-pause
-exit /b 1
+if not defined term (pause)
+exit /b %exitcode%
