@@ -2,8 +2,6 @@
 setlocal EnableExtensions EnableDelayedExpansion
 pushd "%~dp0"
 
-set "profile=default"
-
 set x64suffix=
 if /i "%~1" == "x64" (set "x64suffix= (x64)")
 set "rev=0.7.1"
@@ -14,9 +12,8 @@ set "regPathDirBg=HKCU\Software\Classes\Directory\Background\shell"
 set "regPathFileType=HKCU\Software\Classes\SystemFileAssociations\.$$FileType$$\shell"
 
 call:Logo
-call:Assert "exist %profile%.ini" "error: couldn't find profile `%profile%'" || exit /b
-call:ReadConf "%profile%" || (
-    >&2 echo error: error reading configurations
+call:ReadConf || (
+    >&2 echo error: error reading file `install.ini'
     goto errexit
 )
 call:Assert "defined Config_TargetDirectory" "error: `target directory' not defined" || exit /b
@@ -60,8 +57,8 @@ for /L %%i in (1,1,%Config_ItemAmount%) do (
     @echo     Item %%i Destination:     !Item%%i_Destination!
     @echo;
 )
-@echo If not, enter N and write modifications in `%profile%.custom.ini'.
-@echo Items defined in `%profile%.custom.ini' will overwrite ones of the same name in `%profile%.ini'.
+@echo If not, enter N and write modifications in `install.custom.ini'.
+@echo Items defined in `install.custom.ini' will overwrite ones of the same name in `install.ini'.
 @echo;
 set /p "confirm=Please confirm your decision (Y/N): "
 
@@ -310,11 +307,8 @@ exit /b
 exit /b 0
 
 :ReadConf
-@REM %1: Config file name without .ini
-set "readconf_fn=%~1"
-if "%readconf_fn%" == "" (set "readconf_fn=default")
-call:_ReadConf "%readconf_fn%.ini" || exit /b
-call:_ReadConf "%readconf_fn%.custom.ini" || exit /b 0
+call:_ReadConf "install.ini" || exit /b
+call:_ReadConf "install.custom.ini" || exit /b 0
 exit /b
 
 :_ReadConf
