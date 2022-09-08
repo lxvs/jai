@@ -8,7 +8,7 @@ set target_dir=
 set item_amount=
 set filetype=
 set UserPath=
-set "regPathSoftware=HKCU\Software\lxvs\jai"
+set "regPathSoftware=HKCU\Software\lzhh\jai"
 call:GetReg "%regPathSoftware%" "version" version
 call:GetReg "%regPathSoftware%" "target" target_dir
 if not defined version if not defined target_dir if not defined silent (

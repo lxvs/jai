@@ -3,11 +3,11 @@ Just Archive It
 License for use and distribution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Copyright (C) 2021-2022 lxvs.
+Copyright (C) 2021-2022 Liu, Zhao-hui.
 
 JAI (Just Archive It) files are under the GNU LGPL license.
 
-Notes: 
+Notes:
 You can use JAI on any computer, including a computer in a commercial
 organization. You don't need to register or pay for JAI.
 
@@ -25,5 +25,5 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Lesser General Public License for more details.
 
-You can receive a copy of the GNU Lesser General Public License from 
+You can receive a copy of the GNU Lesser General Public License from
 http://www.gnu.org/
