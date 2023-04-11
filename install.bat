@@ -270,10 +270,10 @@ set "regPathSoftware=HKCU\Software\lzhh\jai"
     copy /y "%x64infix%7za.exe" "%Config_TargetDirectory%\7za.exe"
     copy /y "%x64infix%7za.dll" "%Config_TargetDirectory%\7za.dll"
     copy /y "License-7z.txt" "%Config_TargetDirectory%\License-7z.txt"
-    reg add "%regPathSoftware%" /v "version" /d "%rev%" /f
-    reg add "%regPathSoftware%" /v "target" /d "%Config_TargetDirectory%" /f
-    reg add "%regPathSoftware%" /v "amount" /d "%Config_ItemAmount%" /f
-    reg add "%regPathSoftware%" /v "filetype" /d "%Config_FileType%" /f
+    reg add "%regPathSoftware%" /v "Version" /d "%rev%" /f
+    reg add "%regPathSoftware%" /v "Target" /d "%Config_TargetDirectory%" /f
+    reg add "%regPathSoftware%" /v "Amount" /d "%Config_ItemAmount%" /f
+    reg add "%regPathSoftware%" /v "FileTypes" /d "%Config_FileType%" /f
     for /L %%i in (1,1,%Config_ItemAmount%) do if defined item_%%i if defined Item%%i_Options if defined Item%%i_Destination (
         if "%Config_DirMenu%" NEQ "0" (
             reg add "%regPathDir%\jai_%%i" /ve /d "!item_%%i!" /f

@@ -9,8 +9,8 @@ set item_amount=
 set filetype=
 set UserPath=
 set "regPathSoftware=HKCU\Software\lzhh\jai"
-call:GetReg "%regPathSoftware%" "version" version
-call:GetReg "%regPathSoftware%" "target" target_dir
+call:GetReg "%regPathSoftware%" "Version" version
+call:GetReg "%regPathSoftware%" "Target" target_dir
 if not defined version if not defined target_dir if not defined silent (
     >&2 echo warning: no installation found
     set silent=1
@@ -44,8 +44,8 @@ if exist "%target_dir%" (
     )
 )
 
-call:GetReg "%regPathSoftware%" "amount" item_amount
-call:GetReg "%regPathSoftware%" "filetype" filetype
+call:GetReg "%regPathSoftware%" "Amount" item_amount
+call:GetReg "%regPathSoftware%" "FileTypes" filetype
 set /a "item_amount=item_amount"
 set "regPathDir=HKCU\Software\Classes\Directory\shell"
 set "regPathDirBg=HKCU\Software\Classes\Directory\Background\shell"
