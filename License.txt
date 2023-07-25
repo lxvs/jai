@@ -3,7 +3,7 @@ Just Archive It
 License for use and distribution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Copyright (C) 2021-2022 Liu, Zhao-hui.
+Copyright (C) 2021-2023 Liu, Zhao-hui.
 
 JAI (Just Archive It) files are under the GNU LGPL license.
 
