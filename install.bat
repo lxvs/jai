@@ -6,7 +6,7 @@ set x64suffix=
 if /i "%~1" == "x64" (set "x64suffix= (x64)")
 set "rev=0.8.0"
 set "lastupdt=2023-07-25"
-set "website=https://gitlab.com/lzhh/jai"
+set "website=https://github.com/lxvs/jai"
 set "regPathDir=HKCU\Software\Classes\Directory\shell"
 set "regPathDirBg=HKCU\Software\Classes\Directory\Background\shell"
 set "regPathFileType=HKCU\Software\Classes\SystemFileAssociations\.$$FileType$$\shell"
@@ -262,7 +262,7 @@ echo exit /b 1
 endlocal
 
 if defined x64suffix (set "x64infix=x64\") else (set x64infix=)
-set "regPathSoftware=HKCU\Software\lzhh\jai"
+set "regPathSoftware=HKCU\Software\lxvs\jai"
 1>nul (
     copy /y "%TEMP%\jai.bat" "%Config_TargetDirectory%\jai.bat"
     del "%TEMP%\jai.bat"
