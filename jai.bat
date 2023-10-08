@@ -61,10 +61,14 @@ if "%param%" == "/?" (
         set "flags_7z=%flags_7z% %param%"
     )
 ) else (
-    set "args=%args% %1"
+    call:append_args "%~1"
 )
 shift /1
 goto paramparse
+
+:append_args
+set "args=%args% %1"
+exit /b
 
 :skipswitches
 if "%~1" == "" (goto postparamparse)
@@ -81,7 +85,7 @@ if not defined target (
     goto errexit
 )
 if not exist "%target%" (
-    >&2 echo error: TARGET `%target%' does not exist
+    call:err "error: TARGET `%target%' does not exist"
     goto errexit
 )
 if "%target:~-1%" == "\" (set "target=%target:~0,-1%")
@@ -153,7 +157,7 @@ if not defined dest (
         set "dest=%~1"
         popd
     ) || (
-        >&2 echo error: `%~1' does not exist or is not a directory
+        call:err "error: `%~1' does not exist or is not a directory"
         exit /b 1
     )
     shift /1
@@ -179,6 +183,12 @@ exit /b
 @echo     Date: 2023-07-25
 @echo     https://github.com/lxvs/jai
 exit /b
+
+:err
+if %1. == . (exit /b 1)
+>&2 echo %~1
+shift /1
+goto err
 
 :errexit
 %pause%
