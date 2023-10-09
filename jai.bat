@@ -7,7 +7,6 @@ if /i "%~1" == "/?" (goto help)
 set pause=
 if /i "%~1" == "--pause-when-error" (
     set "pause=pause"
-    title Just Archive It 0.8.0
     shift /1
 )
 
