@@ -4,8 +4,8 @@ pushd "%~dp0"
 
 set x64suffix=
 if /i "%~1" == "x64" (set "x64suffix= (x64)")
-set "rev=0.8.1"
-set "lastupdt=2023-10-09"
+set "rev=0.8.2"
+set "lastupdt=2024-09-25"
 set "website=https://github.com/lxvs/jai"
 set "regPathDir=HKCU\Software\Classes\Directory\shell"
 set "regPathDirBg=HKCU\Software\Classes\Directory\Background\shell"

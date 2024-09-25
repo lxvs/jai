@@ -178,8 +178,8 @@ exit /b
 
 :Logo
 @echo;
-@echo     Just Archive It 0.8.1
-@echo     Date: 2023-10-09
+@echo     Just Archive It 0.8.2
+@echo     Date: 2024-09-25
 @echo     https://github.com/lxvs/jai
 exit /b
 
